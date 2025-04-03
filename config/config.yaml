@@ -1,0 +1,165 @@
+dataroot: "data/"
+workers: 2
+batch_size: 128
+image_size: 64
+nc: 3
+nz: 100
+ngf: 64
+ndf: 64
+num_epochs: 5
+lr: 0.0002
+beta1: 0.5
+ngpu: 1
+
+generator:
+  name: "generator"
+  input_size: 100
+
+  layers:
+    - type: "ConvTranspose2d"
+      params:
+        in_channels: 100
+        out_channels: 64 * 8
+        kernel_size: 4
+        stride: 1
+        padding: 0
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 8
+    - type: "ReLU"
+      params:
+        in_place: true
+
+
+    - type: "ConvTranspose2d"
+      params:
+        in_channels: 64 * 8
+        out_channels: 64 * 4
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 4
+    - type: "ReLU"
+      params:
+        in_place: true
+
+
+    - type: "ConvTranspose2d"
+      params:
+        in_channels: 64 * 4
+        out_channels: 64 * 2
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 2
+    - type: "ReLU"
+      params:
+        inplace: true
+
+    - type: "ConvTranspose2d"
+      params:
+        in_channels: 64 * 2
+        out_channels: 64
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64
+    - type: "ReLU"
+      params:
+        inplace: true
+    - type: "ConvTranspose2d"
+      params:
+        in_channels: 64
+        out_channels: 3
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "Tanh"
+      params: {}
+
+discriminator:
+  name: 'discriminator'
+  input_size: [3,64,64]
+  layers:
+    - type: "Conv2d"
+      params:
+        in_channels: 3
+        out_channels: 64
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "LeakyReLU"
+      params:
+        negative_slope: 0.2
+        inplace: true
+
+    - type: "Conv2d"
+      params:
+        in_channels: 64
+        out_channels: 64 * 2
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 2
+    - type: "LeakyReLU"
+      params:
+        negative_slope: 0.2
+        inplace: true
+
+    - type: "Conv2d"
+      params:
+        in_channels: 64 * 2
+        out_channels: 64 * 4
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 4
+    - type: "LeakyReLU"
+      params:
+        negative_slope: 0.2
+        inplace: true
+
+    - type: "Conv2d"
+      params:
+        in_channels: 64 * 4
+        out_channels: 64 * 8
+        kernel_size: 4
+        stride: 2
+        padding: 1
+        bias: false
+    - type: "BatchNorm2d"
+      params:
+        num_features: 64 * 8
+    - type: "LeakyReLU"
+      params:
+        negative_slope: 0.2
+        inplace: true
+    - type: "Conv2d"
+      params:
+        in_channels: 64 * 8
+        out_channels: 1
+        kernel_size: 4
+        stride: 1
+        padding: 0
+        bias: false
+    - type: "Sigmoid"
+      params: {}
+
