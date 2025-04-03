@@ -29,7 +29,7 @@ generator:
         num_features: 512
     - type: "ReLU"
       params:
-        in_place: true
+        inplace: true
 
 
     - type: "ConvTranspose2d"
@@ -45,7 +45,7 @@ generator:
         num_features: 256
     - type: "ReLU"
       params:
-        in_place: true
+        inplace: true
 
 
     - type: "ConvTranspose2d"
