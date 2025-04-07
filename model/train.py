@@ -39,13 +39,32 @@ def init_weights(model):
 
 if __name__ =="__main__":
     config=load_config(r"U:\Users\Enlink\PycharmProjects\DCGAN\config\config.yaml")
-    #dataloader,device=get_dataloader(config)
-    device=torch.device("cpu")
+    dataloader,device=get_dataloader(config)
     netD=Discriminator(config).to(device)
     netG=Generator(config).to(device)
     netG.apply(init_weights)
     netD.apply(init_weights)
     print(netD)
     print(netG)
+    criterion=nn.BCELoss()
+    nz=config['nz']
+    lr=config['lr']
+    fixed_noise=torch.randn(64,100,1,1,device=device)
+    real_label=1
+    fake_label=0
+    beta1=config['beta1']
+    num_epochs=config['num_epochs']
+    optimizer_D=optim.Adam(netD.parameters(),lr=lr,betas=(beta1,0.999))
+    optimizer_G=optim.Adam(netG.parameters(),lr=lr,betas=(beta1,0.999))
 
+    img_list=[]
+    G_losses=[]
+    D_losses=[]
+    iters=0
+    print("Starting Training Loop")
 
+    #训练的目的是让判别器（Discriminator）对虚假数据的输出尽可能接近0，对真实数据的输出尽可能接近1.
+    #对于生成器，需要尽可能的提高欺骗判别器的能力，最终是让D(G(z))收敛到0.5
+    for epoch in range(num_epochs):
+        for i,data in enumerate(dataloader,0):
+            netD.zero_grad()
