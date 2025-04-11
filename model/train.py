@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 import yaml
+from holoviews import output
+
 from model import Generator,Discriminator
 from dataloader import get_dataloader
 # Set random seed for reproducibility
@@ -68,3 +70,47 @@ if __name__ =="__main__":
     for epoch in range(num_epochs):
         for i,data in enumerate(dataloader,0):
             netD.zero_grad()
+
+            real_cpu=data[0].to(device)
+            print(data.shape)
+            b_size=real_cpu.size(0)
+            label=torch.full((b_size,),real_label,dtype=torch.float,device=device)
+            output=netD(real_cpu).view(-1)
+
+            errD_real=criterion(output,label)
+            errD_real.backward()
+            D_x=output.mean().item()
+
+            noise=torch.randn(b_size,nz,1,1,device=device)
+            fake=netG(noise)
+            label.fill_(fake_label)
+            output=netD(fake)
+            errD_fake=criterion(output,label)
+            errD_fake.backward()
+            D_G_z1=output.mean().item()
+
+            errD=errD_real+errD_fake
+            optimizer_D.step()
+
+            netG.zero_grad()
+            label.fill_(real_label)
+            output=netD(fake).view(-1)
+            errG=criterion(output,label)
+
+            errG.backward()
+            D_G_z2=output.mean().item()
+            optimizer_G.step()
+
+            if i%50==0:
+                print('epoch [%d/%d][%d/%d]\tloss_D:%.4f\tloss_G:%.4f\tD(x):%.4f\tD(G(z)):%.4f: %.4f/%.4f',
+                (epoch, num_epochs, i, len(dataloader),
+                   errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
+            G_losses.append(errG.item())
+            D_losses.append(errD.item())
+            if (iters % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
+                with torch.no_grad():
+                    fake = netG(fixed_noise).detach().cpu()
+                img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
+            iters+=1
+
+
